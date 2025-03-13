@@ -74,7 +74,7 @@ set_verbosity(verbose=True)
 # Example data
 df = pd.DataFrame({
     "id": ["seq1", "seq2", "seq3", "seq4"],
-    "sequence": ["ACDEFGHIKL", "ACDEFGHIKL", "MNPQRSTVWY", "MNPQRSTVWY"]
+    "sequence": ["ACDEFGHIKL", "ACDEFGHIKL", "MNPdQRSTVWY", "MNPQRSTVWY"]
 })
 
 # Clean data

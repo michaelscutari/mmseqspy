@@ -1,7 +1,19 @@
+# linting
+.ruff_cache
+
+# internal testing
+dist/
+notebooks/
+.DS_Store
 data/
-tests/
+
+# build artifacts
 build/
 mmseqspy.egg-info/
 mmseqspy/__pycache__/
-.ruff_cache
-dist/
+
+# test artifacts
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
