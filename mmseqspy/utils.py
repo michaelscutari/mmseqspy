@@ -1,7 +1,5 @@
-import os
 import random
 import shutil
-import subprocess
 import numpy as np
 import logging
 
@@ -61,10 +59,12 @@ def _check_mmseqs():
     logger.debug("MMseqs2 found in PATH")
 
 
-def _validate_clustering_params(min_seq_id, coverage, cov_mode, alignment_mode, cluster_mode, cluster_steps):
+def _validate_clustering_params(
+    min_seq_id, coverage, cov_mode, alignment_mode, cluster_mode, cluster_steps
+):
     """
     Validates the clustering parameters are within acceptable ranges.
-    
+
     Parameters:
         min_seq_id (float): Minimum sequence identity (0-1)
         coverage (float): Minimum coverage (0-1)
@@ -72,7 +72,7 @@ def _validate_clustering_params(min_seq_id, coverage, cov_mode, alignment_mode, 
         alignment_mode (int): Alignment mode (0-4)
         cluster_mode (int): Cluster mode (0-2)
         cluster_steps (int): Number of clustering steps (>0)
-        
+
     Raises:
         ValueError: If any parameter is outside its valid range
     """
@@ -83,8 +83,12 @@ def _validate_clustering_params(min_seq_id, coverage, cov_mode, alignment_mode, 
     if cov_mode not in [0, 1, 2]:
         raise ValueError(f"cov_mode must be 0, 1, or 2, got {cov_mode}")
     if alignment_mode not in [0, 1, 2, 3, 4]:
-        raise ValueError(f"alignment_mode must be 0, 1, 2, 3, or 4, got {alignment_mode}")
+        raise ValueError(
+            f"alignment_mode must be 0, 1, 2, 3, or 4, got {alignment_mode}"
+        )
     if cluster_mode not in [0, 1, 2]:
         raise ValueError(f"cluster_mode must be 0, 1, or 2, got {cluster_mode}")
     if not isinstance(cluster_steps, int) or cluster_steps <= 0:
-        raise ValueError(f"cluster_steps must be a positive integer, got {cluster_steps}")
+        raise ValueError(
+            f"cluster_steps must be a positive integer, got {cluster_steps}"
+        )

@@ -7,7 +7,7 @@ from .splitting import (
     train_test_val_cluster_split,
     constrained_split,
     cluster_kfold,
-    milp_split
+    milp_split,
 )
 
 __all__ = [
@@ -20,5 +20,5 @@ __all__ = [
     "set_seed",
     "constrained_split",
     "cluster_kfold",
-    "milp_split"
+    "milp_split",
 ]

@@ -1,12 +1,12 @@
 import os
 import tempfile
-import pandas as pd
 import subprocess
 import shutil
 import logging
 
 from .logger import logger
 from .utils import _check_mmseqs, _validate_clustering_params
+
 
 def cluster(
     df,
@@ -54,7 +54,9 @@ def cluster(
     )
 
     _check_mmseqs()
-    _validate_clustering_params(min_seq_id, coverage, cov_mode, alignment_mode, cluster_mode, cluster_steps)
+    _validate_clustering_params(
+        min_seq_id, coverage, cov_mode, alignment_mode, cluster_mode, cluster_steps
+    )
 
     if id_col is None:
         df = df.reset_index()

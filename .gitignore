@@ -6,6 +6,7 @@ dist/
 notebooks/
 .DS_Store
 data/
+tape/
 
 # build artifacts
 build/
