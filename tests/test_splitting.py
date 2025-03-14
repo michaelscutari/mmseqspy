@@ -194,6 +194,7 @@ def test_milp_split(fluorescence_data, mmseqs_installed):
         balance_cols=["fluorescence"],
         balance_weight=2.0,
         variance_weight=1.0,
+        time_limit=10,
         range_weight=1.0,
     )
 
@@ -378,6 +379,7 @@ def test_enhanced_milp_split(fluorescence_data, protein_data=None):
         balance_weight=2.0,
         variance_weight=1.0,
         range_weight=1.0,
+        time_limit=10,
         random_state=42,
     )
 
@@ -425,6 +427,7 @@ def test_enhanced_milp_split(fluorescence_data, protein_data=None):
             balance_weight=2.0,
             variance_weight=1.0,
             range_weight=1.0,
+            time_limit=10,
             random_state=42,
         )
 

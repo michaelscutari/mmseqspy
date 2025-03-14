@@ -7,6 +7,8 @@ from .test_utils import (
     create_cluster_dataset,
     create_identity_test_dataset,
     create_edge_case_dataset,
+    create_protein_family_dataset,
+    create_challenging_dataset,
 )
 
 # Define the path to the JSON file - you can place it in this location
@@ -17,7 +19,7 @@ TAPE_FLUORESCENCE_PATH = os.path.join(DATA_DIR, "fluorescence.json")
 @pytest.fixture
 def fluorescence_data():
     """
-    Load the first 100 proteins from the TAPE fluorescence dataset.
+    Load the first 400 proteins from the TAPE fluorescence dataset.
     The dataset should be in JSON format with at least 'sequence' and 'fluorescence' fields.
     """
     if not os.path.exists(TAPE_FLUORESCENCE_PATH):
@@ -51,15 +53,36 @@ def synthetic_cluster_data():
     Generate synthetic data with well-defined clusters for testing.
 
     Returns:
-        DataFrame with synthetic sequences organized in 5 clusters,
+        DataFrame with synthetic sequences organized in 10 clusters,
         with high within-cluster similarity and low between-cluster similarity.
     """
     return create_cluster_dataset(
         n_clusters=10,
-        seqs_per_cluster=6,
+        seqs_per_cluster=5,
         seq_length=100,
         within_identity=0.9,
         between_identity=0.3,
+        seed=42,
+        realistic=True,  # Use realistic sequences by default
+    )
+
+
+@pytest.fixture
+def realistic_protein_data():
+    """
+    Generate synthetic protein data that mimics real protein families.
+
+    Returns:
+        DataFrame with realistic protein sequences organized in families,
+        with appropriate properties and characteristics.
+    """
+    return create_protein_family_dataset(
+        n_families=10,
+        proteins_per_family=8,
+        avg_seq_length=350,  # Typical protein length
+        length_stddev=100,  # Variation in protein length
+        within_identity=0.85,
+        between_identity=0.25,
         seed=42,
     )
 
@@ -78,6 +101,7 @@ def identity_test_data():
         identity_levels=[1.0, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5],
         variants_per_level=3,
         seed=42,
+        realistic=True,
     )
 
 
@@ -93,6 +117,18 @@ def edge_case_data():
 
 
 @pytest.fixture
+def challenging_protein_data():
+    """
+    Generate challenging protein data for robustness testing.
+
+    Returns:
+        DataFrame with protein sequences that present challenges for
+        clustering and splitting algorithms.
+    """
+    return create_challenging_dataset()
+
+
+@pytest.fixture
 def mmseqs_installed():
     """Skip tests if MMseqs2 is not installed."""
     import shutil
@@ -104,15 +140,21 @@ def mmseqs_installed():
 
 @pytest.fixture(autouse=True)
 def test_logger():
-    # Set up a dedicated logger for tests.
+    """Set up test logger and suppress warnings during tests."""
+    # Set up a dedicated logger for tests
     test_log = logging.getLogger("mmseqspy")
-    test_log.setLevel(logging.DEBUG)
 
-    # Clear any existing handlers to avoid duplicates.
+    # Store original level to restore later
+    original_level = test_log.level
+
+    # Set to ERROR level during tests to suppress warnings
+    test_log.setLevel(logging.ERROR)
+
+    # Clear any existing handlers to avoid duplicates
     if test_log.hasHandlers():
         test_log.handlers.clear()
 
-    # Create and add a stream handler with a simple formatter.
+    # Create and add a stream handler with a simple formatter
     handler = logging.StreamHandler()
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     handler.setFormatter(formatter)
@@ -120,5 +162,6 @@ def test_logger():
 
     yield test_log
 
-    # Cleanup: clear handlers after tests run.
+    # Cleanup: restore original level and clear handlers after tests run
+    test_log.setLevel(original_level)
     test_log.handlers.clear()

@@ -33,6 +33,9 @@ def split(
     rng = check_random_state(random_state)
 
     total_sequences = len(df)
+    if total_sequences == 0:
+        return df.copy(), df.copy()  # Return two empty DataFrames
+
     target_test_count = int(round(test_size * total_sequences))
 
     logger.info(f"Total sequence count: {total_sequences}")
@@ -191,6 +194,17 @@ def train_test_val_cluster_split(
     _validate_clustering_params(
         min_seq_id, coverage, cov_mode, alignment_mode, cluster_mode, cluster_steps
     )
+
+    # Validate split parameters
+    if test_size < 0 or val_size < 0:
+        raise ValueError(
+            f"test_size ({test_size}) and val_size ({val_size}) must be non-negative"
+        )
+
+    if test_size + val_size >= 1.0:
+        raise ValueError(
+            f"test_size ({test_size}) + val_size ({val_size}) must be less than 1.0"
+        )
 
     logger.info("Step 1: Clustering sequences")
     df_clustered = perform_clustering(  # Use the renamed import
