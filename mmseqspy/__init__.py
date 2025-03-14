@@ -1,4 +1,4 @@
-from .utils import set_seed, set_verbosity
+from .utils import set_verbosity, check_random_state
 from .preprocessing import clean
 from .clustering import cluster
 from .splitting import (
@@ -17,8 +17,8 @@ __all__ = [
     "train_test_cluster_split",
     "train_test_val_cluster_split",
     "set_verbosity",
-    "set_seed",
     "constrained_split",
     "cluster_kfold",
     "milp_split",
+    "check_random_state",
 ]
