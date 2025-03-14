@@ -3,7 +3,7 @@ from setuptools import find_packages, setup
 
 setup(
     name="mmseqspy",
-    version="0.2.0",
+    version="0.3.0",
     description="Python utilities for protein sequence clustering and dataset splitting with MMseqs2",
     long_description="""
     mmseqspy provides utilities for clustering protein sequences and creating train-test splits
