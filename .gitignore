@@ -18,3 +18,4 @@ mmseqspy/__pycache__/
 .coverage
 htmlcov/
 coverage.xml
+__pycache__

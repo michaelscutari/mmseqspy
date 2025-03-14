@@ -58,28 +58,32 @@ def cluster(
         min_seq_id, coverage, cov_mode, alignment_mode, cluster_mode, cluster_steps
     )
 
+    # Create a deep copy to avoid SettingWithCopyWarning
+    result_df = df.copy(deep=True)
+
     if id_col is None:
-        df = df.reset_index()
+        result_df = result_df.reset_index()
         id_col = "index"
         logger.debug(f"No id_col provided, using '{id_col}' as identifier")
 
-    if sequence_col not in df or id_col not in df:
+    if sequence_col not in result_df or id_col not in result_df:
         logger.error(f"Required columns missing: {sequence_col} or {id_col}")
         raise ValueError(f"The DataFrame must have '{id_col}' and '{sequence_col}'.")
 
-    logger.info(f"Clustering {len(df)} sequences")
+    logger.info(f"Clustering {len(result_df)} sequences")
 
-    df["sanitized_id"] = df[id_col].str.replace(" ", "_")
+    # Use .loc for assignment to avoid SettingWithCopyWarning
+    result_df.loc[:, "sanitized_id"] = result_df[id_col].str.replace(" ", "_")
     tmp_dir = tempfile.mkdtemp()
     logger.debug(f"Created temporary directory: {tmp_dir}")
 
     try:
         input_fasta = os.path.join(tmp_dir, "input.fasta")
         with open(input_fasta, "w") as fasta_file:
-            for _, row in df.iterrows():
+            for _, row in result_df.iterrows():
                 fasta_file.write(f">{row['sanitized_id']}\n{row[sequence_col]}\n")
 
-        logger.debug(f"Wrote {len(df)} sequences to FASTA file")
+        logger.debug(f"Wrote {len(result_df)} sequences to FASTA file")
 
         output_dir = os.path.join(tmp_dir, "output")
         tmp_mmseqs = os.path.join(tmp_dir, "tmp_mmseqs")
@@ -143,8 +147,10 @@ def cluster(
             for size in sorted(cluster_size_counts.keys()):
                 logger.debug(f"  Size {size}: {cluster_size_counts[size]} clusters")
 
-        reverse_map = dict(zip(df["sanitized_id"], df[id_col]))
-        df["representative_sequence"] = df["sanitized_id"].apply(
+        reverse_map = dict(zip(result_df["sanitized_id"], result_df[id_col]))
+
+        # Use .loc for assignment to avoid SettingWithCopyWarning
+        result_df.loc[:, "representative_sequence"] = result_df["sanitized_id"].apply(
             lambda x: reverse_map.get(cluster_map.get(x, x), x)
         )
 
@@ -156,5 +162,6 @@ def cluster(
         logger.debug(f"Cleaning up temporary directory: {tmp_dir}")
         shutil.rmtree(tmp_dir)
 
-    df.drop(columns=["sanitized_id"], inplace=True)
-    return df
+    # Avoid inplace=True to prevent SettingWithCopyWarning
+    result_df = result_df.drop(columns=["sanitized_id"])
+    return result_df

@@ -3,6 +3,11 @@ import json
 import pytest
 import pandas as pd
 import logging
+from .test_utils import (
+    create_cluster_dataset,
+    create_identity_test_dataset,
+    create_edge_case_dataset,
+)
 
 # Define the path to the JSON file - you can place it in this location
 DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
@@ -38,6 +43,53 @@ def fluorescence_data():
         df["id"] = [f"protein_{i}" for i in range(len(df))]
 
     return df
+
+
+@pytest.fixture
+def synthetic_cluster_data():
+    """
+    Generate synthetic data with well-defined clusters for testing.
+
+    Returns:
+        DataFrame with synthetic sequences organized in 5 clusters,
+        with high within-cluster similarity and low between-cluster similarity.
+    """
+    return create_cluster_dataset(
+        n_clusters=10,
+        seqs_per_cluster=6,
+        seq_length=100,
+        within_identity=0.9,
+        between_identity=0.3,
+        seed=42,
+    )
+
+
+@pytest.fixture
+def identity_test_data():
+    """
+    Generate synthetic data with sequences at specific identity levels.
+
+    Returns:
+        DataFrame with sequences at controlled identity levels to test
+        clustering thresholds.
+    """
+    return create_identity_test_dataset(
+        base_seq_length=100,
+        identity_levels=[1.0, 0.95, 0.9, 0.8, 0.7, 0.6, 0.5],
+        variants_per_level=3,
+        seed=42,
+    )
+
+
+@pytest.fixture
+def edge_case_data():
+    """
+    Generate synthetic data with edge cases for robustness testing.
+
+    Returns:
+        DataFrame with edge case sequences.
+    """
+    return create_edge_case_dataset()
 
 
 @pytest.fixture
