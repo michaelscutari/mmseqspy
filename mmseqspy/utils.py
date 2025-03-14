@@ -1,4 +1,3 @@
-import random
 import shutil
 import numpy as np
 import logging
@@ -6,24 +5,27 @@ import logging
 from .logger import logger
 
 
-# default seed
-_DEFAULT_SEED = 42
-_current_seed = _DEFAULT_SEED
-
-
-def set_seed(seed=_DEFAULT_SEED):
+def check_random_state(random_state):
     """
-    Set random seeds for reproducibility.
+    Turn seed into a np.random.RandomState instance.
 
     Parameters:
-        seed (int): Random seed value (default 42)
+        random_state (None, int, or RandomState): If None, return the global
+            RandomState. If int, return a new RandomState with the seed.
+            If RandomState, return it unchanged.
+
+    Returns:
+        RandomState: NumPy RandomState object
     """
-    global _current_seed
-    if seed != _current_seed:
-        logger.info(f"Setting random seed to {seed}")
-        random.seed(seed)
-        np.random.seed(seed)
-        _current_seed = seed
+    if random_state is None:
+        return np.random.RandomState()
+    elif isinstance(random_state, (int, np.integer)):
+        return np.random.RandomState(random_state)
+    elif isinstance(random_state, np.random.RandomState):
+        return random_state
+    raise ValueError(
+        f"random_state must be None, int, or RandomState, got {type(random_state)}"
+    )
 
 
 def set_verbosity(verbose=False):

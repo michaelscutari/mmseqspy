@@ -1,8 +1,7 @@
-import random
 import pandas as pd
 import numpy as np
 from .logger import logger
-from .utils import set_seed
+from .utils import check_random_state
 from .clustering import (
     cluster as perform_clustering,
 )
@@ -30,9 +29,8 @@ def split(
     """
     logger.info(f"Splitting data by '{group_col}' with target test size {test_size}")
 
-    # Set random seed if provided for reproducibility
-    if random_state is not None:
-        set_seed(random_state)
+    # Get random state for reproducibility
+    rng = check_random_state(random_state)
 
     total_sequences = len(df)
     target_test_count = int(round(test_size * total_sequences))
@@ -48,7 +46,7 @@ def split(
     group_size_pairs.sort(key=lambda x: str(x[0]))  # Deterministic sorting
 
     # Shuffle using the global random state
-    random.shuffle(group_size_pairs)
+    rng.shuffle(group_size_pairs)
 
     groups = [pair[0] for pair in group_size_pairs]
     sizes = [pair[1] for pair in group_size_pairs]
@@ -255,10 +253,6 @@ def constrained_split(
     """
     logger.info("Performing constrained train/test split")
 
-    # Set the random seed if provided
-    if random_state is not None:
-        set_seed(random_state)
-
     # Initialize forced IDs if not provided
     force_train_ids = [] if force_train_ids is None else force_train_ids
     force_test_ids = [] if force_test_ids is None else force_test_ids
@@ -404,9 +398,8 @@ def cluster_kfold(
         f"Performing {n_splits}-fold cross-validation with cluster-aware splits"
     )
 
-    # Set the random seed if provided
-    if random_state is not None:
-        set_seed(random_state)
+    # Get random state for reproducibility
+    rng = check_random_state(random_state)
 
     from .utils import _validate_clustering_params
 
@@ -456,7 +449,7 @@ def cluster_kfold(
 
         # Shuffle each size group
         for size in size_groups:
-            random.shuffle(size_groups[size])
+            rng.shuffle(size_groups[size])
 
         # Reconstruct clusters_with_sizes with preserved size ordering but shuffled within size
         clusters_with_sizes = []
@@ -570,9 +563,6 @@ def milp_split(
         raise ImportError("PuLP is required for MILP-based splitting")
 
     logger.info(f"Performing MILP-based splitting with target test size {test_size}")
-
-    if random_state is not None:
-        set_seed(random_state)
 
     if balance_cols is None:
         balance_cols = []
