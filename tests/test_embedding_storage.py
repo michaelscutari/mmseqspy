@@ -119,3 +119,32 @@ def test_get_embeddings_from_df(sample_df, sample_embeddings):
     # Check error handling
     with pytest.raises(ValueError):
         get_embeddings_from_df(df, "nonexistent_col")
+
+
+def test_get_embeddings_errors():
+    """Test error handling in embedding storage functions."""
+    import pandas as pd
+    from mmseqspy.embeddings.storage import get_embeddings_from_df
+
+    # Test missing column
+    df = pd.DataFrame({"id": [1, 2, 3]})
+    with pytest.raises(ValueError):
+        get_embeddings_from_df(df, "nonexistent_column")
+
+
+def test_list_embeddings_nonexistent_file():
+    """Test listing embeddings from a non-existent HDF file."""
+    from mmseqspy.embeddings.storage import list_embeddings_in_hdf
+    import tempfile
+
+    # Generate a file path that doesn't exist
+    with tempfile.NamedTemporaryFile() as f:
+        non_existent_path = f.name + "_nonexistent"
+
+    # Should return empty dict for non-existent file
+    result = list_embeddings_in_hdf(non_existent_path)
+    assert result == {}
+
+    # Test with specific embedding type
+    result = list_embeddings_in_hdf(non_existent_path, embedding_type="test_type")
+    assert result == {"test_type": []}

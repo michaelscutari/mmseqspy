@@ -502,3 +502,64 @@ def test_enhanced_milp_split(fluorescence_data, protein_data=None):
         logger.info(
             f"MILP vs Naive mean balance improvement: {naive_mean_diff_pct - mean_diff_pct:.2f}%"
         )
+
+
+def test_empty_dataset_handling():
+    """Test splitting functions with empty datasets."""
+    import pandas as pd
+    from mmseqspy import split
+
+    # Create empty DataFrame with the required columns
+    empty_df = pd.DataFrame(columns=["representative_sequence", "id"])
+
+    # Test basic split - this doesn't call mmseqs
+    train_df, test_df = split(empty_df, group_col="representative_sequence")
+    assert len(train_df) == 0 and len(test_df) == 0
+
+
+def test_embedder_edge_cases():
+    """Test edge cases and error handling in embedders."""
+    from mmseqspy.embeddings import BLOSUMEmbedder
+
+    # Test with invalid pooling method
+    embedder = BLOSUMEmbedder()
+    with pytest.raises(ValueError):
+        embedder.generate("ACDEFG", pooling="invalid_method")
+
+    # Test empty sequence
+    empty_result = embedder.generate("")
+    assert empty_result.shape == (
+        0,
+        20,
+    )  # Should return empty array with correct dimensions
+
+
+def test_milp_split_categorical_handling(fluorescence_data):
+    """Test MILP splitting with categorical variables."""
+    from mmseqspy import milp_split
+    import numpy as np
+
+    df = fluorescence_data.head(20).copy()
+
+    # Add categorical columns
+    df["category"] = np.random.choice(["A", "B", "C"], size=len(df))
+    df["binary"] = np.random.choice([0, 1], size=len(df))
+
+    # Add cluster column simulation
+    df["representative_sequence"] = df.index.astype(str)
+
+    try:
+        # Test with categorical columns
+        train_df, test_df = milp_split(
+            df,
+            group_col="representative_sequence",
+            test_size=0.3,
+            categorical_cols=["category"],
+            time_limit=1,  # Short timeout to avoid hanging tests
+        )
+
+        # Check that split was created
+        assert len(train_df) + len(test_df) == len(df)
+    except ImportError:
+        # Skip if PuLP not available
+        pytest.skip("PuLP not installed, skipping MILP test")

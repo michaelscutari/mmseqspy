@@ -131,7 +131,8 @@ def list_embeddings_in_hdf(
         Dict mapping embedding types to lists of protein IDs
     """
     if not os.path.exists(hdf_path):
-        return {}
+        # Return consistent structure even when file doesn't exist
+        return {embedding_type: []} if embedding_type else {}
 
     result = {}
     with h5py.File(hdf_path, "r") as f:

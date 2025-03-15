@@ -113,3 +113,32 @@ def test_concat_embeddings():
     emb4 = np.array([[1, 2, 3]])
     with pytest.raises(ValueError):
         concat_embeddings([emb1, emb4])
+
+
+def test_normalize_embeddings_zero_range():
+    """Test normalize_embeddings with arrays that have zero range."""
+    from mmseqspy.embeddings.utils import normalize_embeddings
+    import numpy as np
+
+    # Create an array with zero range in one dimension
+    embeddings = np.array([[1, 2, 3], [1, 4, 6], [1, 8, 9]])
+    # First column has all the same value
+
+    # Should handle this gracefully
+    result = normalize_embeddings(embeddings, method="minmax")
+    assert np.all(result[:, 0] == 0)  # All zeros for constant column
+    assert np.min(result[:, 1]) == 0 and np.max(result[:, 1]) == 1  # Normalized
+
+
+def test_compare_embeddings_zero_norm():
+    """Test compare_embeddings with zero-norm vectors."""
+    from mmseqspy.embeddings.utils import compare_embeddings
+    import numpy as np
+
+    # Create a zero vector
+    zero_emb = np.zeros(5)
+    non_zero_emb = np.ones(5)
+
+    # Should handle division by zero gracefully
+    result = compare_embeddings(zero_emb, non_zero_emb, metric="cosine")
+    assert result == 0  # Expected behavior for zero vector

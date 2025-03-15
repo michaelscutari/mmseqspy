@@ -174,3 +174,34 @@ def test_embedding_with_edge_cases():
     # Sequence with invalid amino acids
     emb_invalid = embedder.generate("ACDEFGH*#@")
     assert emb_invalid.shape == (10, 20)
+
+
+def test_embedder_edge_cases():
+    """Test edge cases and error handling in embedders."""
+    from mmseqspy.embeddings import BLOSUMEmbedder, AACompositionEmbedder
+
+    # Test with invalid pooling method
+    embedder = BLOSUMEmbedder()
+    with pytest.raises(ValueError):
+        embedder.generate("ACDEFG", pooling="invalid_method")
+
+    # Test AACompositionEmbedder with k=3 (not fully implemented)
+    embedder = AACompositionEmbedder(k=3)
+    with pytest.raises(ValueError):
+        embedder.generate("ACDEFG")
+
+
+def test_property_embedder_unknown_property():
+    """Test PropertyEmbedder with unknown property."""
+    from mmseqspy.embeddings import PropertyEmbedder
+
+    with pytest.raises(ValueError, match="Unknown property"):
+        PropertyEmbedder(properties=["not_a_real_property"])
+
+
+def test_blosum_embedder_unknown_matrix():
+    """Test BLOSUMEmbedder with unknown matrix type."""
+    from mmseqspy.embeddings import BLOSUMEmbedder
+
+    with pytest.raises(ValueError, match="Unknown matrix type"):
+        BLOSUMEmbedder(matrix_type="BLOSUM_INVALID")

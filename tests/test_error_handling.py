@@ -233,3 +233,38 @@ def test_multithread_consistency(realistic_protein_data, mmseqs_installed):
         result1["representative_sequence"].nunique()
         == result2["representative_sequence"].nunique()
     ), "Different thread count produced different number of clusters"
+
+
+def test_check_random_state_errors():
+    """Test error handling in check_random_state with invalid inputs."""
+    from mmseqspy.utils import check_random_state
+    import numpy as np
+
+    # Test with invalid random_state type
+    with pytest.raises(ValueError):
+        check_random_state("not_a_valid_random_state")
+
+    # Verify it works with valid types
+    assert isinstance(check_random_state(None), np.random.RandomState)
+    assert isinstance(check_random_state(42), np.random.RandomState)
+    assert isinstance(
+        check_random_state(np.random.RandomState(42)), np.random.RandomState
+    )
+
+
+def test_mmseqs_not_found(monkeypatch):
+    """Test error handling when mmseqs is not found."""
+    import shutil
+    from mmseqspy.utils import _check_mmseqs
+
+    # Mock shutil.which to simulate mmseqs not being found
+    def mock_which(cmd):
+        if cmd == "mmseqs":
+            return None
+        return shutil.which(cmd)
+
+    monkeypatch.setattr(shutil, "which", mock_which)
+
+    # Check that it raises the appropriate error
+    with pytest.raises(EnvironmentError, match="MMseqs2 is not installed"):
+        _check_mmseqs()

@@ -268,3 +268,74 @@ def test_get_embeddings_error_handling(sample_df):
 
     with pytest.raises(ValueError):
         get_embeddings(df_with_refs, "blosum62")  # No hdf_path provided
+
+
+def test_convenience_embedding_functions(sample_df):
+    """Test the convenience functions for different embedding types."""
+    from mmseqspy.embeddings import blosum62, blosum90, aac, property_embedding, onehot
+
+    # Test each convenience function
+    assert "blosum62_embedding" in blosum62(sample_df, sequence_col="sequence").columns
+    assert "blosum90_embedding" in blosum90(sample_df, sequence_col="sequence").columns
+    assert "aac_embedding" in aac(sample_df, sequence_col="sequence").columns
+    assert (
+        "property_embedding"
+        in property_embedding(sample_df, sequence_col="sequence").columns
+    )
+    assert "onehot_embedding" in onehot(sample_df, sequence_col="sequence").columns
+
+
+def test_register_embedder_validation():
+    """Test validation when registering embedders with invalid classes."""
+    from mmseqspy.embeddings import register_embedder
+
+    # Create a class that doesn't inherit from BaseEmbedder
+    class InvalidEmbedder:
+        def generate(self, sequence):
+            return None
+
+    # Try to register it - should raise ValueError
+    with pytest.raises(ValueError):
+        register_embedder("invalid", InvalidEmbedder)
+
+
+def test_embed_sequences_validation():
+    """Test validation in embed_sequences function."""
+    from mmseqspy.embeddings import embed_sequences
+    import pandas as pd
+
+    sample_df = pd.DataFrame({"sequence": ["ACDEF"]})
+
+    # Test with use_hdf=True but no hdf_path
+    with pytest.raises(ValueError):
+        embed_sequences(sample_df, "blosum62", use_hdf=True)
+
+    # Test with invalid reduction method
+    with pytest.raises(ValueError):
+        embed_sequences(sample_df, "blosum62", reduce_dim="invalid_method")
+
+
+def test_embed_sequences_with_nonuniform_embeddings(sample_df):
+    """Test dimension reduction on non-uniform embeddings."""
+    from mmseqspy.embeddings import embed_sequences
+    import numpy as np
+
+    # Create a custom embedder that returns non-uniform embeddings
+    from mmseqspy.embeddings.baseline import BaseEmbedder
+
+    class NonUniformEmbedder(BaseEmbedder):
+        def generate(self, sequence, pooling="none", max_length=None):
+            # Return 2D for first sequence, 1D for others
+            if len(sequence) > 6:
+                return np.ones((3, 5))
+            return np.ones(5)
+
+    # Register the custom embedder
+    from mmseqspy.embeddings import register_embedder
+
+    register_embedder("non_uniform", NonUniformEmbedder)
+
+    # This should trigger the dimension reduction code path for non-uniform embeddings
+    result = embed_sequences(sample_df, "non_uniform", reduce_dim="pca", n_components=3)
+
+    assert "non_uniform_pca3_embedding" in result.columns
