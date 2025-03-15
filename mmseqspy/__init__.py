@@ -1,7 +1,6 @@
 from .utils import set_verbosity, check_random_state
 from .preprocessing import clean
 from .clustering import cluster
-from .embeddings import add_embeddings, get_embeddings
 from .splitting import (
     split,
     train_test_cluster_split,
@@ -9,6 +8,16 @@ from .splitting import (
     constrained_split,
     cluster_kfold,
     milp_split,
+)
+from .embeddings import (
+    embed_sequences,
+    get_embeddings,
+    list_available_embedders,
+    register_embedder,
+    blosum62,
+    aac,
+    property_embedding,
+    onehot,
 )
 
 __all__ = [
@@ -22,6 +31,12 @@ __all__ = [
     "cluster_kfold",
     "milp_split",
     "check_random_state",
-    "add_embeddings",
+    "embed_sequences",
     "get_embeddings",
+    "list_available_embedders",
+    "register_embedder",
+    "blosum62",
+    "aac",
+    "property_embedding",
+    "onehot",
 ]
